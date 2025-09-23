@@ -12,6 +12,7 @@ extern "C" {
 //
 
 #include <uni_crypto_crc16.h>
+#include <uni_crypto_hmac.h>
 
 #ifdef __cplusplus
 }
