@@ -16,6 +16,7 @@
 
 // uni.crypto
 #include "uni_crypto_hmac.h"
+#include "uni_crypto_utils.h"
 
 
 
@@ -332,7 +333,7 @@ int uni_crypto_hmac_verify(uni_crypto_hmac_algorithm alg,
         return rc;
     }
 
-    bool equal = memcmp(tag_buf, expected_tag, expected_tag_len) == 0;
+    bool equal = uni_crypto_utils_compare(tag_buf, expected_tag, expected_tag_len) == 0;
     /* Zeroize temporary buffer */
     uni__secure_bzero(tag_buf, sizeof(tag_buf));
 

@@ -12,6 +12,7 @@ add_executable(uni_crypto_test)
 target_sources(uni_crypto_test PRIVATE
     uni_crypto_test_crc16.cpp
     uni_crypto_test_hmac.cpp
+    uni_crypto_test_utils.cpp
 )
 target_link_libraries(uni_crypto_test PRIVATE uni_crypto)
 target_link_libraries(uni_crypto_test PRIVATE Catch2::Catch2WithMain)
