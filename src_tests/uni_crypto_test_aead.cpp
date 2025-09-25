@@ -393,106 +393,111 @@ TEST_CASE("AES-GCM KAT: AES-256 example (AAD present)", "[aead][gcm][kat][aes256
 }
 
 // ---------- AES-CCM success paths and edge coverage ----------
-TEST_CASE("AES-CCM: one-shot round-trip (various sizes, in/out and in-place)", "[aead][ccm][roundtrip]") {
+TEST_CASE("AEAD: one-shot round-trip (various sizes, in/out and in-place)", "[aead][ccm][gcm][roundtrip]") {
     const uint8_t key[16] = { // AES-128
         0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xaa,0xbb,0xcc,0xdd,0xee,0xff
     };
-    const size_t nonce_len = uni_crypto_aead_recommended_nonce_len(UNI_CRYPTO_AEAD_ALG_AES_CCM);
-    std::vector<uint8_t> nonce(nonce_len, 0x01);
     const uint8_t aad[] = {0xA1,0xA2,0xA3,0xA4};
 
-    // Case A: zero-length plaintext, zero-length AAD
-    {
-        uint8_t tag[16] = {0};
-        int rc = aead_encrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key), nonce.data(), nonce.size(),
-                              nullptr, 0, nullptr, 0, nullptr, tag, sizeof(tag));
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+    for (auto alg : {UNI_CRYPTO_AEAD_ALG_AES_CCM, UNI_CRYPTO_AEAD_ALG_AES_GCM}) {
+        CAPTURE(alg);
+        const size_t nonce_len = uni_crypto_aead_recommended_nonce_len(alg);
+        const size_t tag_len = uni_crypto_aead_max_tag_len(alg);
+        std::vector<uint8_t> nonce(nonce_len, 0x01);
 
-        rc = aead_decrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key), nonce.data(), nonce.size(),
-                          nullptr, 0, nullptr, 0, tag, sizeof(tag), nullptr);
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
-    }
+        // Case A: zero-length plaintext, zero-length AAD
+        {
+            std::vector<uint8_t> tag(tag_len, 0);
+            int rc = aead_encrypt(alg, key, sizeof(key), nonce.data(), nonce.size(),
+                                  nullptr, 0, nullptr, 0, nullptr, tag.data(), tag.size());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
 
-    // Case B: non-empty PT, zero AAD (out-of-place)
-    {
-        const uint8_t pt[] = "CCM-plaintext-32bytes-___________"; // 32 bytes
-        const size_t pt_len = sizeof(pt) - 1;
-        std::vector<uint8_t> ct(pt_len);
-        uint8_t tag[16] = {0};
+            rc = aead_decrypt(alg, key, sizeof(key), nonce.data(), nonce.size(),
+                              nullptr, 0, nullptr, 0, tag.data(), tag.size(), nullptr);
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+        }
 
-        int rc = aead_encrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key),
+        // Case B: non-empty PT, zero AAD (out-of-place)
+        {
+            const uint8_t pt[] = "CCM-plaintext-32bytes-___________"; // 32 bytes
+            const size_t pt_len = sizeof(pt) - 1;
+            std::vector<uint8_t> ct(pt_len);
+            std::vector<uint8_t> tag(tag_len, 0);
+
+            int rc = aead_encrypt(alg, key, sizeof(key),
+                                  nonce.data(), nonce.size(),
+                                  nullptr, 0,
+                                  pt, pt_len,
+                                  ct.data(),
+                                  tag.data(), tag.size());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+
+            std::vector<uint8_t> out(pt_len, 0xCC);
+            rc = aead_decrypt(alg, key, sizeof(key),
                               nonce.data(), nonce.size(),
                               nullptr, 0,
-                              pt, pt_len,
-                              ct.data(),
-                              tag, sizeof(tag));
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+                              ct.data(), ct.size(),
+                              tag.data(), tag.size(),
+                              out.data());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+            REQUIRE(std::memcmp(out.data(), pt, pt_len) == 0);
+        }
 
-        std::vector<uint8_t> out(pt_len, 0xCC);
-        rc = aead_decrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key),
-                          nonce.data(), nonce.size(),
-                          nullptr, 0,
-                          ct.data(), ct.size(),
-                          tag, sizeof(tag),
-                          out.data());
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
-        REQUIRE(std::memcmp(out.data(), pt, pt_len) == 0);
-    }
+        // Case C: non-empty PT and AAD (in-place)
+        {
+            std::vector<uint8_t> buf(64);
+            for (size_t i = 0; i < buf.size(); ++i) buf[i] = uint8_t(i);
+            std::vector<uint8_t> tag(tag_len, 0);
 
-    // Case C: non-empty PT and AAD (in-place)
-    {
-        std::vector<uint8_t> buf(64);
-        for (size_t i = 0; i < buf.size(); ++i) buf[i] = uint8_t(i);
-        uint8_t tag[16] = {0};
+            // Encrypt in-place (ciphertext_out == plaintext)
+            int rc = aead_encrypt(alg, key, sizeof(key),
+                                  nonce.data(), nonce.size(),
+                                  aad, sizeof(aad),
+                                  buf.data(), buf.size(),
+                                  buf.data(),
+                                  tag.data(), tag.size());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
 
-        // Encrypt in-place (ciphertext_out == plaintext)
-        int rc = aead_encrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key),
+            // Decrypt in-place back to plaintext
+            rc = aead_decrypt(alg, key, sizeof(key),
                               nonce.data(), nonce.size(),
                               aad, sizeof(aad),
                               buf.data(), buf.size(),
-                              buf.data(), // in-place
-                              tag, sizeof(tag));
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+                              tag.data(), tag.size(),
+                              buf.data());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
 
-        // Decrypt in-place back to plaintext
-        rc = aead_decrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key),
-                          nonce.data(), nonce.size(),
-                          aad, sizeof(aad),
-                          buf.data(), buf.size(),
-                          tag, sizeof(tag),
-                          buf.data());
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
-
-        // Compare to expected original plaintext
-        for (size_t i = 0; i < buf.size(); ++i) {
-            REQUIRE(buf[i] == uint8_t(i));
+            // Compare to expected original plaintext
+            for (size_t i = 0; i < buf.size(); ++i) {
+                REQUIRE(buf[i] == uint8_t(i));
+            }
         }
-    }
 
-    // Case D: multi-block plaintext crossing block boundaries
-    {
-        std::vector<uint8_t> pt(4096 + 17);
-        for (size_t i = 0; i < pt.size(); ++i) pt[i] = uint8_t(i & 0xFF);
+        // Case D: multi-block plaintext crossing block boundaries
+        {
+            std::vector<uint8_t> pt(4096 + 17);
+            for (size_t i = 0; i < pt.size(); ++i) pt[i] = uint8_t(i & 0xFF);
 
-        std::vector<uint8_t> ct(pt.size());
-        uint8_t tag[16] = {0};
-        int rc = aead_encrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key),
+            std::vector<uint8_t> ct(pt.size());
+            std::vector<uint8_t> tag(tag_len, 0);
+            int rc = aead_encrypt(alg, key, sizeof(key),
+                                  nonce.data(), nonce.size(),
+                                  aad, sizeof(aad),
+                                  pt.data(), pt.size(),
+                                  ct.data(),
+                                  tag.data(), tag.size());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+
+            std::vector<uint8_t> dec(pt.size(), 0);
+            rc = aead_decrypt(alg, key, sizeof(key),
                               nonce.data(), nonce.size(),
                               aad, sizeof(aad),
-                              pt.data(), pt.size(),
-                              ct.data(),
-                              tag, sizeof(tag));
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
-
-        std::vector<uint8_t> dec(pt.size(), 0);
-        rc = aead_decrypt(UNI_CRYPTO_AEAD_ALG_AES_CCM, key, sizeof(key),
-                          nonce.data(), nonce.size(),
-                          aad, sizeof(aad),
-                          ct.data(), ct.size(),
-                          tag, sizeof(tag),
-                          dec.data());
-        REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
-        REQUIRE(std::memcmp(dec.data(), pt.data(), pt.size()) == 0);
+                              ct.data(), ct.size(),
+                              tag.data(), tag.size(),
+                              dec.data());
+            REQUIRE(rc == UNI_CRYPTO_AEAD_SUCCESS);
+            REQUIRE(std::memcmp(dec.data(), pt.data(), pt.size()) == 0);
+        }
     }
 }
 
