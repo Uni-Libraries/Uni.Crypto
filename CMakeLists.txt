@@ -27,6 +27,7 @@ add_library(uni_crypto)
 target_sources(uni_crypto PRIVATE
     src/uni_crypto_crc16.c
     src/uni_crypto_hmac.c
+    src/uni_crypto_aead.c
     src/uni_crypto_utils.c
 )
 
