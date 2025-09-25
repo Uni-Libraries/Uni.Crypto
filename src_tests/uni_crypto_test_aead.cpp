@@ -798,11 +798,6 @@ TEST_CASE("AEAD: concurrency/thread-safety smoke test", "[aead][threads]") {
     }
 }
 
-TEST_CASE("ChaCha20-Poly1305 KATs (RFC 7539) — API not available here", "[aead][chacha20poly1305][skip]") {
-    INFO("ChaCha20-Poly1305 is not part of this AEAD API (AES-GCM/CCM only). Skipping KATs by design.");
-    SUCCEED();
-}
-// Additional AEAD tests appended by suite for completeness
 
 TEST_CASE("AES-GCM: in-place round-trip with AAD and varying sizes", "[aead][gcm][inplace]") {
     const size_t nlen = uni_crypto_aead_recommended_nonce_len(UNI_CRYPTO_AEAD_ALG_AES_GCM);
