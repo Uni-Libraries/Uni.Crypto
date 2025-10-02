@@ -35,7 +35,7 @@ struct uni_crypto_hmac_context {
      */
     bool owns_memory;
 };
-_Static_assert(UNI_CRYPTO_HMAC_CONTEXT_SIZE == sizeof(struct uni_crypto_hmac_context), "UNI_CRYPTO_HMAC_CONTEXT_SIZE too small for uni_crypto_hmac_context");
+_Static_assert(UNI_CRYPTO_HMAC_CONTEXT_SIZE >= sizeof(struct uni_crypto_hmac_context), "UNI_CRYPTO_HMAC_CONTEXT_SIZE too small for uni_crypto_hmac_context");
 
 
 
@@ -52,12 +52,6 @@ static mbedtls_md_type_t uni__map_alg(uni_crypto_hmac_algorithm alg) {
 }
 
 
-static void uni__secure_bzero(void* p, size_t n) {
-    if (p && n > 0) {
-        mbedtls_platform_zeroize(p, n);
-    }
-}
-
 /* Reinitialize/clear internal state safely */
 static void uni__ctx_reset_storage(uni_crypto_hmac_context* ctx) {
     if (!ctx) return;
@@ -68,7 +62,7 @@ static void uni__ctx_reset_storage(uni_crypto_hmac_context* ctx) {
         /* If not initialized, md_ctx may still be zero; ensure consistent state */
     }
     /* Zeroize the entire struct content including md_ctx and metadata */
-    uni__secure_bzero(ctx, sizeof(*ctx));
+    uni_crypto_utils_zeroize(ctx, sizeof(*ctx));
 }
 
 
@@ -107,7 +101,7 @@ int uni_crypto_hmac_context_create_static(void* buffer, size_t buffer_len, uni_c
 
     uni_crypto_hmac_context* ctx = (uni_crypto_hmac_context*)buffer;
     /* Ensure full zero-initialization and backend init */
-    uni__secure_bzero(ctx, sizeof(*ctx));
+    uni_crypto_utils_zeroize(ctx, sizeof(*ctx));
     mbedtls_md_init(&ctx->md_ctx);
     ctx->initialized = false;
     ctx->owns_memory = false;
@@ -127,7 +121,7 @@ void uni_crypto_hmac_free(uni_crypto_hmac_context* ctx) {
         mbedtls_md_free(&ctx->md_ctx);
     }
     /* Zeroize entire context including embedded mbedtls_md_context_t */
-    uni__secure_bzero(ctx, sizeof(*ctx));
+    uni_crypto_utils_zeroize(ctx, sizeof(*ctx));
     if (should_free) {
         free(ctx);
     }
@@ -171,14 +165,14 @@ int uni_crypto_hmac_init(uni_crypto_hmac_context* ctx,
     if (rc != 0) {
         /* Zeroize any partial state, restore to clean */
         mbedtls_md_free(&ctx->md_ctx);
-        uni__secure_bzero(&ctx->md_ctx, sizeof(ctx->md_ctx));
+        uni_crypto_utils_zeroize(&ctx->md_ctx, sizeof(ctx->md_ctx));
         return UNI_CRYPTO_HMAC_EINTERNAL;
     }
 
     rc = mbedtls_md_hmac_starts(&ctx->md_ctx, key, key_len);
     if (rc != 0) {
         mbedtls_md_free(&ctx->md_ctx);
-        uni__secure_bzero(&ctx->md_ctx, sizeof(ctx->md_ctx));
+        uni_crypto_utils_zeroize(&ctx->md_ctx, sizeof(ctx->md_ctx));
         return UNI_CRYPTO_HMAC_EINTERNAL;
     }
 
@@ -271,13 +265,13 @@ int uni_crypto_hmac_compute(uni_crypto_hmac_algorithm alg,
     /* Use a local context (no heap) */
     uni_crypto_hmac_context ctx_local;
     /* Ensure full zero-initialization */
-    uni__secure_bzero(&ctx_local, sizeof(ctx_local));
+    uni_crypto_utils_zeroize(&ctx_local, sizeof(ctx_local));
     mbedtls_md_init(&ctx_local.md_ctx);
 
     int rc = uni_crypto_hmac_init(&ctx_local, alg, key, key_len);
     if (rc != UNI_CRYPTO_HMAC_SUCCESS) {
         /* ctx_local.md_ctx already cleaned by init on error path */
-        uni__secure_bzero(&ctx_local, sizeof(ctx_local));
+        uni_crypto_utils_zeroize(&ctx_local, sizeof(ctx_local));
         return rc;
     }
 
@@ -329,13 +323,13 @@ int uni_crypto_hmac_verify(uni_crypto_hmac_algorithm alg,
 
     int rc = uni_crypto_hmac_compute(alg, key, key_len, data, data_len, tag_buf, full);
     if (rc != UNI_CRYPTO_HMAC_SUCCESS) {
-        uni__secure_bzero(tag_buf, sizeof(tag_buf));
+        uni_crypto_utils_zeroize(tag_buf, sizeof(tag_buf));
         return rc;
     }
 
     bool equal = uni_crypto_utils_compare(tag_buf, expected_tag, expected_tag_len) == 0;
     /* Zeroize temporary buffer */
-    uni__secure_bzero(tag_buf, sizeof(tag_buf));
+    uni_crypto_utils_zeroize(tag_buf, sizeof(tag_buf));
 
     if (!equal) {
         return UNI_CRYPTO_HMAC_EVERIFY;
