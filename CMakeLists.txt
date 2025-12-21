@@ -12,6 +12,7 @@ project(uni_crypto)
 # Options
 option(SANITIZE "Enable ASan/UBSan on supported compilers" OFF)
 option(COVERAGE "Enable code coverage (GCC/Clang)" OFF)
+option(UNI_CRYPTO_STM "Build for STM32" ON)
 
 #
 # 3rdparty
@@ -37,7 +38,13 @@ target_sources(uni_crypto PRIVATE
 
 
 target_include_directories(uni_crypto PUBLIC include)
-target_link_libraries(uni_crypto PUBLIC mbedcrypto)
+
+if(UNI_CRYPTO_STM)
+    target_link_libraries(uni_crypto PUBLIC mbedcrypto)
+    target_include_directories(uni_crypto PUBLIC "3rdparty/mbedtls_stm32/include")
+else()
+    target_link_libraries(uni_crypto PUBLIC mbedcrypto)
+endif()
 
 # Instrumentation for sanitizers and coverage on the library too (to see library-side coverage)
 if(SANITIZE AND (CMAKE_C_COMPILER_ID MATCHES "Clang|GNU"))
