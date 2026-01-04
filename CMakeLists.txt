@@ -12,7 +12,7 @@ project(uni_crypto)
 # Options
 option(SANITIZE "Enable ASan/UBSan on supported compilers" OFF)
 option(COVERAGE "Enable code coverage (GCC/Clang)" OFF)
-option(UNI_CRYPTO_STM "Build for STM32" ON)
+option(UNI_CRYPTO_STM "Build for STM32" OFF)
 
 #
 # 3rdparty
