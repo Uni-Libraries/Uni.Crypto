@@ -1,9 +1,9 @@
+set(ENABLE_TESTING OFF CACHE BOOL "mbedtls testing" FORCE)
+set(ENABLE_PROGRAMS OFF CACHE BOOL "mbedtls programs" FORCE)
+
 if(UNI_CRYPTO_STM)
-    set(ENABLE_TESTING OFF)
     add_subdirectory(3rdparty/mbedtls_stm32)
 else()
-    set(ENABLE_TESTING OFF)
-    set(ENABLE_PROGRAMS OFF)
     add_subdirectory(3rdparty/mbedtls)
 endif()
 
