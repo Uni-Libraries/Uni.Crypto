@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText : 2025 Uni-Libraries contributors
 
+include(../cmake/cpm.cmake)
 include(../cmake/cpm-catch.cmake)
 
 # catch

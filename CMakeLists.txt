@@ -18,8 +18,7 @@ option(UNI_CRYPTO_STM "Build for STM32" OFF)
 # 3rdparty
 #
 
-include(cmake/cpm.cmake)
-include(cmake/cpm-mbedtls.cmake)
+include(3rdparty/mbedtls.cmake)
 
 
 
