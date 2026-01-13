@@ -1,5 +1,7 @@
 set(ENABLE_TESTING OFF CACHE BOOL "mbedtls testing" FORCE)
 set(ENABLE_PROGRAMS OFF CACHE BOOL "mbedtls programs" FORCE)
+set(MBEDTLS_AS_SUBPROJECT ON CACHE BOOL "mbedtls subproject" FORCE)
+set(DISABLE_PACKAGE_CONFIG_AND_INSTALL ON CACHE BOOL "mbedtls install" FORCE)
 
 if(UNI_CRYPTO_STM)
     add_subdirectory(3rdparty/mbedtls_stm32)

@@ -13,6 +13,13 @@ project(uni_crypto)
 option(SANITIZE "Enable ASan/UBSan on supported compilers" OFF)
 option(COVERAGE "Enable code coverage (GCC/Clang)" OFF)
 option(UNI_CRYPTO_STM "Build for STM32" OFF)
+if(PROJECT_IS_TOP_LEVEL)
+    option(UNI_CRYPTO_INSTALL "Install uni_crypto" ON)
+else()
+    option(UNI_CRYPTO_INSTALL "Install uni_crypto" OFF)
+endif()
+
+
 
 #
 # 3rdparty
@@ -68,12 +75,14 @@ endif()
 # Installation
 #
 
-install(
-    TARGETS uni_crypto
-    RUNTIME DESTINATION bin
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-)
+if(UNI_CRYPTO_INSTALL)
+    install(
+        TARGETS uni_crypto
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+    )
+endif()
 
 
 
