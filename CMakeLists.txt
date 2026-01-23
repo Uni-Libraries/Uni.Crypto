@@ -42,6 +42,10 @@ target_sources(uni_crypto PRIVATE
     src/uni_crypto_utils.c
 )
 
+include(GenerateExportHeader)
+generate_export_header(uni_crypto)
+target_include_directories(uni_crypto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
 
 target_include_directories(uni_crypto PUBLIC include)
 

@@ -15,6 +15,10 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
+// uni.crypto
+#include "uni_crypto_export.h"
+
+
 //
 // Defines
 //
@@ -53,7 +57,7 @@ typedef enum {
  * Notes:
  *  - Algorithm: CRC-16/CCITT-FALSE (CCSDS): poly 0x1021, init 0xFFFF, MSB-first, no final XOR.
  */
-uint16_t uni_crypto_crc16_ccitt(const uint8_t *data, size_t length);
+UNI_CRYPTO_EXPORT uint16_t uni_crypto_crc16_ccitt(const uint8_t *data, size_t length);
 
 /**
  * Incrementally update a CRC-16/CCITT-FALSE value with additional data.
@@ -66,7 +70,7 @@ uint16_t uni_crypto_crc16_ccitt(const uint8_t *data, size_t length);
  * Returns:
  *  - Updated CRC accumulator. If data is NULL, returns crc unchanged.
  */
-uint16_t uni_crypto_crc16_ccitt_update(uint16_t crc, const uint8_t *data, size_t length);
+UNI_CRYPTO_EXPORT uint16_t uni_crypto_crc16_ccitt_update(uint16_t crc, const uint8_t *data, size_t length);
 
 /**
  * Verify that the last two bytes of a frame contain the correct CRC-16/CCITT-FALSE.
@@ -78,7 +82,7 @@ uint16_t uni_crypto_crc16_ccitt_update(uint16_t crc, const uint8_t *data, size_t
  * Returns:
  *  - true if CRC matches; false otherwise or on invalid arguments.
  */
-bool uni_crypto_crc16_ccitt_verify(const uint8_t *data, size_t length);
+UNI_CRYPTO_EXPORT bool uni_crypto_crc16_ccitt_verify(const uint8_t *data, size_t length);
 
 /**
  * Compute CRC-16/CCITT-FALSE for data and append it to the buffer in big-endian order.
@@ -93,7 +97,7 @@ bool uni_crypto_crc16_ccitt_verify(const uint8_t *data, size_t length);
  *  - UNI_CRYPTO_ERROR_BUFFER_TOO_SMALL if buffer cannot hold data + 2 CRC bytes
  *  - UNI_CRYPTO_ERROR_INVALID_ARGUMENT if buffer is NULL
  */
-uni_crypto_crc16_status_t uni_crypto_crc16_ccitt_append(uint8_t *buffer, size_t data_length, size_t buffer_size);
+UNI_CRYPTO_EXPORT uni_crypto_crc16_status_t uni_crypto_crc16_ccitt_append(uint8_t *buffer, size_t data_length, size_t buffer_size);
 
 
 #ifdef __cplusplus

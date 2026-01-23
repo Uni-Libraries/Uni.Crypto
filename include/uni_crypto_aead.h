@@ -14,6 +14,8 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+// uni.crypto
+#include "uni_crypto_export.h"
 
 
 //
@@ -66,7 +68,7 @@ typedef enum {
  * @param tag_len Requested authentication tag length in bytes (e.g., 16 for GCM, 8/12/16 for CCM).
  * @return UNI_CRYPTO_AEAD_SUCCESS on success or a negative error code on failure.
  */
-int uni_crypto_aead_encrypt(uni_crypto_aead_algorithm alg,
+UNI_CRYPTO_EXPORT int uni_crypto_aead_encrypt(uni_crypto_aead_algorithm alg,
                             const uint8_t* key, size_t key_len,
                             const uint8_t* nonce, size_t nonce_len,
                             const uint8_t* aad, size_t aad_len,
@@ -91,7 +93,7 @@ int uni_crypto_aead_encrypt(uni_crypto_aead_algorithm alg,
  * @param plaintext_out Pointer to the output plaintext buffer (same size as ciphertext; may be NULL when ciphertext_len is 0).
  * @return UNI_CRYPTO_AEAD_SUCCESS on success or a negative error code on failure.
  */
-int uni_crypto_aead_decrypt(uni_crypto_aead_algorithm alg,
+UNI_CRYPTO_EXPORT int uni_crypto_aead_decrypt(uni_crypto_aead_algorithm alg,
                             const uint8_t* key, size_t key_len,
                             const uint8_t* nonce, size_t nonce_len,
                             const uint8_t* aad, size_t aad_len,
@@ -108,14 +110,14 @@ int uni_crypto_aead_decrypt(uni_crypto_aead_algorithm alg,
  * @param alg AEAD algorithm identifier.
  * @return Recommended nonce length in bytes, or 0 if unspecified.
  */
-size_t uni_crypto_aead_recommended_nonce_len(uni_crypto_aead_algorithm alg);
+UNI_CRYPTO_EXPORT size_t uni_crypto_aead_recommended_nonce_len(uni_crypto_aead_algorithm alg);
 
 /**
  * @brief Returns the maximum tag length for an algorithm.
  * @param alg AEAD algorithm identifier.
  * @return Maximum authentication tag length in bytes, or 0 if the algorithm is invalid.
  */
-size_t uni_crypto_aead_max_tag_len(uni_crypto_aead_algorithm alg);
+UNI_CRYPTO_EXPORT size_t uni_crypto_aead_max_tag_len(uni_crypto_aead_algorithm alg);
 
 #ifdef __cplusplus
 } /* extern "C" */

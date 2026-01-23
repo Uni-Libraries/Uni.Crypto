@@ -14,6 +14,8 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+// uni.crypto
+#include "uni_crypto_export.h"
 
 
 //
@@ -94,7 +96,7 @@ typedef enum {
  *  - After this call, the context is constructed but not keyed. You must call
  *    uni_crypto_hmac_init(ctx, alg, key, key_len) before update/final/reset.
  */
-int uni_crypto_hmac_context_create_static(void* buffer, size_t buffer_len, uni_crypto_hmac_context** out_ctx);
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_context_create_static(void* buffer, size_t buffer_len, uni_crypto_hmac_context** out_ctx);
 
 /**
  * @brief Allocate a new HMAC context.
@@ -105,7 +107,7 @@ int uni_crypto_hmac_context_create_static(void* buffer, size_t buffer_len, uni_c
  *  - The returned context is uninitialized; call uni_crypto_hmac_init()
  *    before use, and uni_crypto_hmac_free() to release resources.
  */
-uni_crypto_hmac_context* uni_crypto_hmac_create(void);
+UNI_CRYPTO_EXPORT uni_crypto_hmac_context* uni_crypto_hmac_create(void);
 
 /**
  * @brief Release resources held by the context and zeroize sensitive material.
@@ -114,7 +116,7 @@ uni_crypto_hmac_context* uni_crypto_hmac_create(void);
  *
  * After this call, the context memory is released and must not be used.
  */
-void uni_crypto_hmac_free(uni_crypto_hmac_context* ctx);
+UNI_CRYPTO_EXPORT void uni_crypto_hmac_free(uni_crypto_hmac_context* ctx);
 
 /**
  * @brief Initialize an HMAC context for a specific algorithm and key.
@@ -134,7 +136,7 @@ void uni_crypto_hmac_free(uni_crypto_hmac_context* ctx);
  *  - If ctx was already initialized, the context is safely re-initialized.
  *  - On success, ctx is ready to accept data via uni_crypto_hmac_update().
  */
-int uni_crypto_hmac_init(uni_crypto_hmac_context* ctx,
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_init(uni_crypto_hmac_context* ctx,
                          uni_crypto_hmac_algorithm alg,
                          const uint8_t* key,
                          size_t key_len);
@@ -153,7 +155,7 @@ int uni_crypto_hmac_init(uni_crypto_hmac_context* ctx,
  *
  * This function can be called multiple times to process streaming data.
  */
-int uni_crypto_hmac_update(uni_crypto_hmac_context* ctx,
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_update(uni_crypto_hmac_context* ctx,
                            const void* data,
                            size_t data_len);
 
@@ -175,7 +177,7 @@ int uni_crypto_hmac_update(uni_crypto_hmac_context* ctx,
  *  - After final, the context remains associated with the same key and algorithm
  *    and can be re-used for a new message by calling uni_crypto_hmac_reset().
  */
-int uni_crypto_hmac_final(uni_crypto_hmac_context* ctx,
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_final(uni_crypto_hmac_context* ctx,
                           uint8_t* out_tag,
                           size_t out_tag_len);
 
@@ -189,7 +191,7 @@ int uni_crypto_hmac_final(uni_crypto_hmac_context* ctx,
  * @retval UNI_CRYPTO_HMAC_ESTATE   If ctx is not initialized.
  * @retval UNI_CRYPTO_HMAC_EINTERNAL If the backend reset fails.
  */
-int uni_crypto_hmac_reset(uni_crypto_hmac_context* ctx);
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_reset(uni_crypto_hmac_context* ctx);
 
 /**
  * @brief Compute an HMAC in one shot.
@@ -204,7 +206,7 @@ int uni_crypto_hmac_reset(uni_crypto_hmac_context* ctx);
  *
  * @return UNI_CRYPTO_HMAC_SUCCESS on success or a negative error code on failure.
  */
-int uni_crypto_hmac_compute(uni_crypto_hmac_algorithm alg,
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_compute(uni_crypto_hmac_algorithm alg,
                             const uint8_t* key, size_t key_len,
                             const void* data, size_t data_len,
                             uint8_t* out_tag, size_t out_tag_len);
@@ -231,7 +233,7 @@ int uni_crypto_hmac_compute(uni_crypto_hmac_algorithm alg,
  * @retval UNI_CRYPTO_HMAC_EVERIFY  If tags do not match (constant-time).
  * @retval negative                 Other errors from compute/init/update/final.
  */
-int uni_crypto_hmac_verify(uni_crypto_hmac_algorithm alg,
+UNI_CRYPTO_EXPORT int uni_crypto_hmac_verify(uni_crypto_hmac_algorithm alg,
                            const uint8_t* key, size_t key_len,
                            const void* data, size_t data_len,
                            const uint8_t* expected_tag, size_t expected_tag_len);
@@ -242,7 +244,7 @@ int uni_crypto_hmac_verify(uni_crypto_hmac_algorithm alg,
  * @param[in] alg  Algorithm identifier.
  * @return Digest size in bytes; 0 if alg is invalid/unsupported.
  */
-size_t uni_crypto_hmac_digest_size(uni_crypto_hmac_algorithm alg);
+UNI_CRYPTO_EXPORT size_t uni_crypto_hmac_digest_size(uni_crypto_hmac_algorithm alg);
 
 /**
  * @brief Get the HMAC block size (in bytes) for an algorithm.
@@ -250,7 +252,7 @@ size_t uni_crypto_hmac_digest_size(uni_crypto_hmac_algorithm alg);
  * @param[in] alg  Algorithm identifier.
  * @return Block size in bytes; 0 if alg is invalid/unsupported.
  */
-size_t uni_crypto_hmac_block_size(uni_crypto_hmac_algorithm alg);
+UNI_CRYPTO_EXPORT size_t uni_crypto_hmac_block_size(uni_crypto_hmac_algorithm alg);
 
 #ifdef __cplusplus
 } /* extern "C" */
