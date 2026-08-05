@@ -12,6 +12,7 @@ extern "C" {
 //
 
 #include <uni_crypto_crc16.h>
+#include <uni_crypto_hash.h>
 #include <uni_crypto_hmac.h>
 #include <uni_crypto_aead.h>
 #include <uni_crypto_utils.h>

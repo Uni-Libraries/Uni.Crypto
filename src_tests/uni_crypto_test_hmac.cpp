@@ -26,9 +26,28 @@
 
 TEST_CASE("hmac size", "[hmac]") {
     REQUIRE(uni_crypto_hmac_digest_size(UNI_CRYPTO_HMAC_ALG_SHA256) == 32u);
+    REQUIRE(uni_crypto_hmac_digest_size(UNI_CRYPTO_HMAC_ALG_SHA224) == 28u);
     REQUIRE(uni_crypto_hmac_digest_size(UNI_CRYPTO_HMAC_ALG_SHA1) == 20u);
     REQUIRE(uni_crypto_hmac_block_size(UNI_CRYPTO_HMAC_ALG_SHA256) == 64u);
+    REQUIRE(uni_crypto_hmac_block_size(UNI_CRYPTO_HMAC_ALG_SHA224) == 64u);
     REQUIRE(uni_crypto_hmac_block_size(UNI_CRYPTO_HMAC_ALG_SHA1) == 64u);
+}
+
+TEST_CASE("hmac sha224 RFC4231 known vector", "[hmac][sha224]") {
+    std::array<uint8_t, 20> key{};
+    key.fill(0x0b);
+    const uint8_t msg[] = "Hi There";
+    const uint8_t expected[28] = {
+        0x89,0x6f,0xb1,0x12,0x8a,0xbb,0xdf,0x19,0x68,0x32,0x10,0x7c,0xd4,0x9d,
+        0xf3,0x3f,0x47,0xb4,0xb1,0x16,0x99,0x12,0xba,0x4f,0x53,0x68,0x4b,0x22
+    };
+    uint8_t out[28]{};
+
+    REQUIRE(uni_crypto_hmac_compute(UNI_CRYPTO_HMAC_ALG_SHA224,
+                                    key.data(), key.size(),
+                                    msg, sizeof(msg) - 1u,
+                                    out, sizeof(out)) == UNI_CRYPTO_HMAC_SUCCESS);
+    REQUIRE(std::memcmp(out, expected, sizeof(out)) == 0);
 }
 
 TEST_CASE("hmac sha256 RFC4231 known vectors", "[hmac][sha256]") {

@@ -48,7 +48,8 @@ typedef struct uni_crypto_hmac_context uni_crypto_hmac_context;
 typedef enum {
     UNI_CRYPTO_HMAC_ALG_INVALID = 0,  /*!< Invalid/unspecified algorithm */
     UNI_CRYPTO_HMAC_ALG_SHA256  = 1,  /*!< HMAC over SHA-256 */
-    UNI_CRYPTO_HMAC_ALG_SHA1    = 2   /*!< HMAC over SHA-1 */
+    UNI_CRYPTO_HMAC_ALG_SHA1    = 2,  /*!< HMAC over SHA-1 */
+    UNI_CRYPTO_HMAC_ALG_SHA224  = 3   /*!< HMAC over SHA-224 */
 } uni_crypto_hmac_algorithm;
 
 

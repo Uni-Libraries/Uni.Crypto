@@ -12,6 +12,7 @@ include(Catch)
 add_executable(uni_crypto_test)
 target_sources(uni_crypto_test PRIVATE
     uni_crypto_test_crc16.cpp
+    uni_crypto_test_hash.cpp
     uni_crypto_test_hmac.cpp
     uni_crypto_test_utils.cpp
     uni_crypto_test_aead.cpp

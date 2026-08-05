@@ -46,6 +46,7 @@ _Static_assert(UNI_CRYPTO_HMAC_CONTEXT_SIZE >= sizeof(struct uni_crypto_hmac_con
 static mbedtls_md_type_t uni__map_alg(uni_crypto_hmac_algorithm alg) {
     switch (alg) {
         case UNI_CRYPTO_HMAC_ALG_SHA256: return MBEDTLS_MD_SHA256;
+        case UNI_CRYPTO_HMAC_ALG_SHA224: return MBEDTLS_MD_SHA224;
         case UNI_CRYPTO_HMAC_ALG_SHA1:   return MBEDTLS_MD_SHA1;
         default:                         return MBEDTLS_MD_NONE;
     }
@@ -340,6 +341,7 @@ int uni_crypto_hmac_verify(uni_crypto_hmac_algorithm alg,
 size_t uni_crypto_hmac_digest_size(uni_crypto_hmac_algorithm alg) {
     switch (alg) {
         case UNI_CRYPTO_HMAC_ALG_SHA256: return 32u;
+        case UNI_CRYPTO_HMAC_ALG_SHA224: return 28u;
         case UNI_CRYPTO_HMAC_ALG_SHA1:   return 20u;
         default:                         return 0u;
     }
@@ -348,6 +350,7 @@ size_t uni_crypto_hmac_digest_size(uni_crypto_hmac_algorithm alg) {
 size_t uni_crypto_hmac_block_size(uni_crypto_hmac_algorithm alg) {
     switch (alg) {
         case UNI_CRYPTO_HMAC_ALG_SHA256: return 64u;
+        case UNI_CRYPTO_HMAC_ALG_SHA224: return 64u;
         case UNI_CRYPTO_HMAC_ALG_SHA1:   return 64u;
         default:                         return 0u;
     }
