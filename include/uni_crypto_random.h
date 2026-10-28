@@ -26,6 +26,12 @@ extern "C" {
 // Functions
 //
 
+/**
+ * @brief Fills a buffer with cryptographically secure random bytes from the backend DRBG.
+ * @param data Output buffer (not NULL).
+ * @param data_len Number of bytes to generate (any size; large requests are served in DRBG-sized chunks).
+ * @return true on success; false for a NULL buffer, a zero length, or an entropy source / DRBG failure.
+ */
 UNI_CRYPTO_EXPORT bool uni_crypto_random_fill(uint8_t* data, size_t data_len);
 
 #ifdef __cplusplus

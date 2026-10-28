@@ -5,7 +5,13 @@ include(../cmake/cpm.cmake)
 include(../cmake/cpm-catch.cmake)
 
 # catch
-list(APPEND CMAKE_MODULE_PATH "${Catch2_SOURCE_DIR}/extras")
+# Catch.cmake lives in extras/ of a CPM-fetched Catch2 and next to the package config of an installed one
+# (CPM_USE_LOCAL_PACKAGES=ON or an offline build).
+if(Catch2_SOURCE_DIR)
+    list(APPEND CMAKE_MODULE_PATH "${Catch2_SOURCE_DIR}/extras")
+else()
+    list(APPEND CMAKE_MODULE_PATH "${Catch2_DIR}")
+endif()
 include(Catch)
 
 # test
@@ -16,6 +22,8 @@ target_sources(uni_crypto_test PRIVATE
     uni_crypto_test_hmac.cpp
     uni_crypto_test_utils.cpp
     uni_crypto_test_aead.cpp
+    uni_crypto_test_aead_ctx.cpp
+    uni_crypto_test_random.cpp
 )
 target_link_libraries(uni_crypto_test PRIVATE uni_crypto)
 target_link_libraries(uni_crypto_test PRIVATE Catch2::Catch2WithMain)

@@ -43,8 +43,12 @@ bool uni_crypto_random_fill(uint8_t* data, size_t data_len){
         (const unsigned char*)pers,
         strlen(pers)
     );
-    if(rc == 0){
-        rc = mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char*)data, data_len);
+    /* A single DRBG request is limited to MBEDTLS_CTR_DRBG_MAX_REQUEST octets. */
+    while(rc == 0 && data_len > 0U){
+        const size_t chunk = (data_len < MBEDTLS_CTR_DRBG_MAX_REQUEST) ? data_len : MBEDTLS_CTR_DRBG_MAX_REQUEST;
+        rc = mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char*)data, chunk);
+        data += chunk;
+        data_len -= chunk;
     }
 
     mbedtls_ctr_drbg_free(&ctr_drbg);
@@ -52,7 +56,14 @@ bool uni_crypto_random_fill(uint8_t* data, size_t data_len){
     /* Fallback: fill directly from entropy source.
        Note: this is not a deterministic DRBG and depends entirely on
        mbedTLS entropy sources configured for the platform. */
-    rc = mbedtls_entropy_func(&entropy, (unsigned char*)data, data_len);
+    rc = 0;
+    /* A single entropy request is limited to MBEDTLS_ENTROPY_BLOCK_SIZE octets. */
+    while(rc == 0 && data_len > 0U){
+        const size_t chunk = (data_len < MBEDTLS_ENTROPY_BLOCK_SIZE) ? data_len : MBEDTLS_ENTROPY_BLOCK_SIZE;
+        rc = mbedtls_entropy_func(&entropy, (unsigned char*)data, chunk);
+        data += chunk;
+        data_len -= chunk;
+    }
 #endif
 
     mbedtls_entropy_free(&entropy);

@@ -47,6 +47,42 @@ typedef enum {
 
 
 //
+// Typedefs
+//
+
+/**
+ * @brief Size in bytes of the storage reserved for a keyed AEAD context.
+ *
+ * The implementation checks at compile time that the backend state fits; a backend configured with very large
+ * GCM tables (MBEDTLS_GCM_LARGE_TABLE) needs this value raised.
+ */
+#define UNI_CRYPTO_AEAD_CTX_SIZE (1024u)
+
+/**
+ * @brief Keyed AEAD context: the AES key schedule (and GCM hash tables) computed once by uni_crypto_aead_ctx_init()
+ * and reused for every message.
+ *
+ * The one-shot functions uni_crypto_aead_encrypt() / uni_crypto_aead_decrypt() derive the key schedule on every call;
+ * a context removes that cost for protocols that protect many messages with one key (e.g. SDLS frames).
+ *
+ * Lifetime: zero-initialize (or uni_crypto_aead_ctx_free()) -> uni_crypto_aead_ctx_init() -> any number of
+ * uni_crypto_aead_ctx_encrypt() / uni_crypto_aead_ctx_decrypt() -> uni_crypto_aead_ctx_free(). The context may live
+ * in static or automatic storage; the backend may allocate internally during init, released by free.
+ *
+ * Thread-safety: a context must not be used concurrently by multiple threads.
+ */
+typedef struct uni_crypto_aead_ctx {
+    union {
+        uint64_t align_u64;
+        void* align_ptr;
+        long double align_ld;
+        unsigned char bytes[UNI_CRYPTO_AEAD_CTX_SIZE];
+    } opaque; /**< Implementation state; do not access. */
+} uni_crypto_aead_ctx;
+
+
+
+//
 // Functions
 //
 
@@ -100,6 +136,49 @@ UNI_CRYPTO_EXPORT int uni_crypto_aead_decrypt(uni_crypto_aead_algorithm alg,
                             const uint8_t* ciphertext, size_t ciphertext_len,
                             const uint8_t* expected_tag, size_t expected_tag_len,
                             uint8_t* plaintext_out);
+
+/**
+ * @brief Keys an AEAD context.
+ * @details Computes the AES key schedule once. The key bytes are not retained by the context.
+ * @param ctx Context in zero-initialized or freed state (initializing an already keyed context leaks its backend state).
+ * @param alg AEAD algorithm (AES-GCM or AES-CCM).
+ * @param key Secret key (16, 24 or 32 bytes).
+ * @param key_len Key length in bytes.
+ * @return UNI_CRYPTO_AEAD_SUCCESS, UNI_CRYPTO_AEAD_EINVAL for NULL arguments, UNI_CRYPTO_AEAD_EALGO for an unsupported
+ *         algorithm or key length. On failure the context is left in the freed state.
+ */
+UNI_CRYPTO_EXPORT int uni_crypto_aead_ctx_init(uni_crypto_aead_ctx* ctx, uni_crypto_aead_algorithm alg, const uint8_t* key, size_t key_len);
+
+/**
+ * @brief Encrypts with a keyed context; same contract and results as uni_crypto_aead_encrypt().
+ * @details ciphertext_out may be equal to plaintext (in-place encryption); partial overlap is not allowed.
+ * @return UNI_CRYPTO_AEAD_SUCCESS, or UNI_CRYPTO_AEAD_EINVAL when the context is not keyed or arguments are invalid,
+ *         or another negative error code.
+ */
+UNI_CRYPTO_EXPORT int uni_crypto_aead_ctx_encrypt(uni_crypto_aead_ctx* ctx,
+                                                  const uint8_t* nonce, size_t nonce_len,
+                                                  const uint8_t* aad, size_t aad_len,
+                                                  const uint8_t* plaintext, size_t plaintext_len,
+                                                  uint8_t* ciphertext_out,
+                                                  uint8_t* tag_out, size_t tag_len);
+
+/**
+ * @brief Decrypts and verifies with a keyed context; same contract and results as uni_crypto_aead_decrypt().
+ * @details plaintext_out may be equal to ciphertext (in-place decryption); partial overlap is not allowed. On
+ *          UNI_CRYPTO_AEAD_EVERIFY the contents of plaintext_out are unspecified and must be discarded.
+ */
+UNI_CRYPTO_EXPORT int uni_crypto_aead_ctx_decrypt(uni_crypto_aead_ctx* ctx,
+                                                  const uint8_t* nonce, size_t nonce_len,
+                                                  const uint8_t* aad, size_t aad_len,
+                                                  const uint8_t* ciphertext, size_t ciphertext_len,
+                                                  const uint8_t* expected_tag, size_t expected_tag_len,
+                                                  uint8_t* plaintext_out);
+
+/**
+ * @brief Releases backend resources and zeroizes the key schedule.
+ * @param ctx Context to free; NULL and already freed or zero-initialized contexts are allowed (no-op).
+ */
+UNI_CRYPTO_EXPORT void uni_crypto_aead_ctx_free(uni_crypto_aead_ctx* ctx);
 
 /**
  * @brief Helper utilities for AEAD configuration.
