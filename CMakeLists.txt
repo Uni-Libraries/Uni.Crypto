@@ -51,11 +51,9 @@ target_include_directories(uni_crypto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 target_include_directories(uni_crypto PUBLIC include)
 
+target_link_libraries(uni_crypto PUBLIC ${UNI_CRYPTO_MBEDCRYPTO_TARGET})
 if(UNI_CRYPTO_STM)
-    target_link_libraries(uni_crypto PUBLIC mbedcrypto)
     target_include_directories(uni_crypto PUBLIC "3rdparty/mbedtls_stm32/include")
-else()
-    target_link_libraries(uni_crypto PUBLIC mbedcrypto)
 endif()
 
 # Instrumentation for sanitizers and coverage on the library too (to see library-side coverage)
