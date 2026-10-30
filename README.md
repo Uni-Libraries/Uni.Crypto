@@ -11,6 +11,7 @@ validation, constant-time helpers and key-material hygiene.
 | `uni_crypto_hmac.h` | HMAC-SHA-1/224/256: one-shot `compute` / constant-time `verify`, and a streaming context (`init` / `update` / `final` / `reset`) that can live in caller-provided memory (`uni_crypto_hmac_context_create_static`). |
 | `uni_crypto_aead.h` | AES-GCM and AES-CCM authenticated encryption: one-shot `uni_crypto_aead_encrypt` / `decrypt`, and a keyed context (`uni_crypto_aead_ctx_init` / `_encrypt` / `_decrypt` / `_free`) that computes the AES key schedule once. |
 | `uni_crypto_random.h` | Cryptographically secure random bytes from the Mbed TLS CTR-DRBG. |
+| `uni_crypto_splitmix64.h` | SplitMix64: seeded, reproducible and header-only; for test signals and simulations, not cryptographically secure. |
 | `uni_crypto_utils.h` | Constant-time comparison and guaranteed zeroization. |
 | `uni_crypto.h` | Umbrella header. |
 

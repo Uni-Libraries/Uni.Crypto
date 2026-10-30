@@ -16,6 +16,7 @@ extern "C" {
 #include <uni_crypto_hmac.h>
 #include <uni_crypto_aead.h>
 #include <uni_crypto_random.h>
+#include <uni_crypto_splitmix64.h>
 #include <uni_crypto_utils.h>
 
 #ifdef __cplusplus

@@ -24,6 +24,7 @@ target_sources(uni_crypto_test PRIVATE
     uni_crypto_test_aead.cpp
     uni_crypto_test_aead_ctx.cpp
     uni_crypto_test_random.cpp
+    uni_crypto_test_splitmix64.cpp
 )
 target_link_libraries(uni_crypto_test PRIVATE uni_crypto)
 target_link_libraries(uni_crypto_test PRIVATE Catch2::Catch2WithMain)
